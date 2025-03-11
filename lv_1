@@ -1,0 +1,57 @@
+LV_1
+#zad1
+
+# sati=float(input("radni sati: "))
+# rate= float(input("eura/h: "))
+# total= sati*rate
+# print(f"ukupno: {total} eura")
+
+
+#zad2
+
+# try:
+#     ocjena=float(input("unesite osjenu izmedu 0.0 i 1.0: "))
+#     if ocjena<0.0 or ocjena >1.0:
+#         print("greska zato jer ocjena mora biti izmedu 0.0 i 1.0")
+#     else:
+#         if ocjena>=0.9:
+#             print("ocjena A")
+#         if ocjena>=0.8:
+#             print("ocjena B")
+#         if ocjena>=0.7:
+#             print("ocjena C")
+#         if ocjena<=0.6:
+#             print("ocjena D")
+#         if ocjena < 0.5:
+#             print("ocjena F")
+
+# except ValueError:
+#     print("greska, unesite brojcanu vrijednost")
+
+
+#zad3
+
+def main():
+    brojevi = []
+    while True:
+        unos=input("unesite broj (ili 'Done' za kraj): ")
+
+        if unos.lower() == "done":
+            break
+        try:
+            broj=float(unos)
+            brojevi.append(broj)
+        except:
+            print("neispravan unos, unesite broj")
+
+        if brojevi:
+            print(f"ukupno unesenih brojeva: {len(brojevi)}")
+            print(f"srednja vrijednost: {sum(brojevi)/len(brojevi):.2f}")
+            print(f"min vrijednost: {min(brojevi)}")
+            print(f"max vrijednost: {max(brojevi)}")
+
+            brojevi.sort()
+            print("sortirana lista brojeva: ", brojevi)
+        else:
+            print("niste unijeli nijedan broj.")
+    

@@ -1,0 +1,76 @@
+1 zadatak
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
+from tensorflow.keras.datasets import mnist
+import os
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+
+# Učitavanje MNIST skupa podataka
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+# Preprocesiranje podataka
+x_train = x_train.reshape(-1, 28, 28, 1).astype('float32') / 255.0
+x_test = x_test.reshape(-1, 28, 28, 1).astype('float32') / 255.0
+
+# Izgradnja modela
+model = models.Sequential([
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.Flatten(),
+    layers.Dense(64, activation='relu'),
+    layers.Dense(10, activation='softmax')
+])
+
+# Kompajliranje modela
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Definisanje callbackova za TensorBoard i pohranu najboljeg modela
+log_dir = os.path.join("logs", "fit")
+tensorboard_callback = TensorBoard(log_dir=log_dir)
+checkpoint_callback = ModelCheckpoint("best_model.h5", monitor='val_accuracy', save_best_only=True)
+
+# Treniranje modela s 10% podataka za validaciju
+history = model.fit(x_train, y_train, epochs=10, validation_split=0.1,
+                    callbacks=[tensorboard_callback, checkpoint_callback])
+
+# Učitavanje najboljeg modela pohranjenog tokom treniranja
+best_model = tf.keras.models.load_model('best_model.h5')
+
+# Evaluacija modela na testnim podacima
+test_loss, test_acc = best_model.evaluate(x_test, y_test)
+train_loss, train_acc = best_model.evaluate(x_train, y_train)
+
+print(f'Test accuracy: {test_acc}')
+print(f'Train accuracy: {train_acc}')
+
+# Predikcija na trening i test podacima
+y_train_pred = best_model.predict(x_train)
+y_train_pred = np.argmax(y_train_pred, axis=1)
+
+y_test_pred = best_model.predict(x_test)
+y_test_pred = np.argmax(y_test_pred, axis=1)
+
+# Matrica zabune za trening skup
+train_cm = confusion_matrix(y_train, y_train_pred)
+test_cm = confusion_matrix(y_test, y_test_pred)
+
+# Prikazivanje matrice zabune
+def plot_confusion_matrix(cm, title='Confusion Matrix'):
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=np.arange(10), yticklabels=np.arange(10))
+    plt.title(title)
+    plt.ylabel('Actual')
+    plt.xlabel('Predicted')
+    plt.show()
+
+# Prikazivanje matrica zabune za trening i test skup
+plot_confusion_matrix(train_cm, 'Confusion Matrix for Training Set')
+plot_confusion_matrix(test_cm, 'Confusion Matrix for Test Set')
